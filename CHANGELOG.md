@@ -5,6 +5,14 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.12] - 2026-04-20
+
+### Fixed
+- Chat avatars no longer disappear when opening a user profile and returning
+  to the chat (MessageViewModel is now stable across recompositions).
+- "Deleted Account" label no longer shown for active users on a cold sender
+  cache; transient resolution failures are no longer cached.
+
 ## [0.2.11] - 2026-04-20
 
 ### Added
