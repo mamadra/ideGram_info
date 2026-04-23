@@ -5,6 +5,9 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.14] - 2026-04-23
+- Build produced by /build command
+
 ## [0.2.13] - 2026-04-22
 - Build produced by /build command
 

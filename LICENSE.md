@@ -133,6 +133,6 @@ Questions about this Agreement should be directed to:
 
 ---
 
-Copyright © 2026 IDEGram Developer. All rights reserved.
+Copyright © 2026 Dmitrii Kosarev. All rights reserved.
 
 IDEGram is not affiliated with, endorsed by, or sponsored by Telegram Messenger Inc. or JetBrains s.r.o. "Telegram" and the Telegram logo are trademarks of Telegram Messenger Inc. "JetBrains" and related marks are trademarks of JetBrains s.r.o.

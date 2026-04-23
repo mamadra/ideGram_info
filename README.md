@@ -44,7 +44,7 @@ See [PRIVACY.md](PRIVACY.md) for full details.
 
 ## License
 
-IDEGram is distributed under a proprietary End User License Agreement. See [LICENSE.md](LICENSE.md) for the full text.
+IDEGram is distributed under a proprietary End User License Agreement. See [LICENSE.md](LICENSE.md) for the full text and [COPYRIGHT.md](COPYRIGHT.md) for the copyright notice.
 
 By installing or using the plugin you agree to be bound by the EULA. Key points:
 
@@ -89,4 +89,4 @@ See the plugin distribution for the full list of open-source notices.
 
 ---
 
-© 2026 IDEGram Developer. All rights reserved.
+© 2026 Dmitrii Kosarev. All rights reserved.

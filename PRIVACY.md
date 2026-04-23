@@ -3,7 +3,7 @@
 **Effective date:** 2026-04-20
 **Version:** 1.0
 
-This Privacy Policy describes how the IDEGram plugin (the "Software", "plugin", "we") handles information when You use it as a Telegram client inside a JetBrains IDE. IDEGram is developed and maintained by the IDEGram Developer ("we", "us", "Developer").
+This Privacy Policy describes how the IDEGram plugin (the "Software", "plugin", "we") handles information when You use it as a Telegram client inside a JetBrains IDE. IDEGram is developed and maintained by Dmitrii Kosarev ("we", "us", "Developer").
 
 IDEGram is not affiliated with Telegram Messenger Inc. or JetBrains s.r.o.
 
