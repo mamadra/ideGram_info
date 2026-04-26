@@ -5,6 +5,28 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.5] - 2026-04-26
+
+### Added
+- **Reply to a message**: right-click any message bubble → **Reply**, type your
+  response, and press Enter. The reply is delivered to mobile / web / desktop
+  Telegram with the standard reply preview attached.
+- **Partial-quote reply**: after picking *Reply*, drag-select any fragment of
+  the original inside the reply preview above the input — the selection is
+  attached as a `quote` so that mobile / web Telegram lands the recipient on
+  exactly that fragment when they tap the preview.
+- **Inline reply previews are now clickable**: tapping an inline reply inside
+  a message bubble scrolls to and briefly highlights the original. If the
+  original is above the currently loaded history window, older messages are
+  fetched automatically.
+- **Quote-replies are visually distinct in the chat view**: when a reply
+  carries a partial-quote, the inline preview inside the bubble shows the
+  *quoted fragment* (italic, in curly quotes), matching how mobile / web
+  Telegram render quote-replies — instead of falling back to the full original.
+- **`Esc` cancels the active reply** while the message input is focused.
+- **`Enter` from the reply preview sends the message** with the captured quote
+  — no need to click back into the input first.
+
 ## [0.2.14] - 2026-04-23
 - Build produced by /build command
 
