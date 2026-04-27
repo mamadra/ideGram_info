@@ -5,6 +5,64 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.12] - 2026-04-27
+
+This is a rollup of everything since 0.3.5 — if you're upgrading from 0.3.4
+or earlier, here's the highlight reel of what's new.
+
+### Added
+- **Reply to a message**, with full **partial-quote** support: drag-select
+  any fragment of the original in the reply preview and the recipient on
+  mobile / web Telegram lands directly on that fragment when they tap the
+  reply.
+- **Inline reply previews are clickable**: scroll to and briefly highlight
+  the original message; older history is fetched on demand if needed.
+- **Forward a message** to another chat from the right-click menu, with
+  Telegram's standard *Forwarded from …* attribution preserved.
+- **"Forwarded from" label** rendered above the bubble for both incoming and
+  outgoing forwards.
+- **Attach a file from the chat input** (📎): images, video, audio and
+  arbitrary documents are auto-classified to the matching native Telegram
+  type, with thumbnails / inline players on the receiving side.
+- **Captions for attachments**: anything you type while a file is attached
+  is delivered as the caption.
+- **Drag-and-drop a file into the chat** to attach it (single file; folders
+  are rejected).
+- **"Send File to Telegram"** in the Project View context menu now actually
+  works: opens the chat picker, lands the file in the picked chat's
+  attachment preview, and works whether the target chat is currently open
+  or not.
+- Up-front 2 GB size limit on attachments, so over-sized files fail fast.
+
+### Fixed
+- **Notification settings now actually take effect**: the global *Enable
+  notifications* toggle is honored, server-side mute (set on another device)
+  is picked up on cold start before you ever open the tool window, and
+  *Enable sound* now plays a beep on each new-message popup.
+- **`Esc` cancels an active reply** while the message input is focused;
+  **`Enter` from the reply preview sends** with the captured quote.
+- **"Send File" no longer greyed out** in the Project View on IJP 2026.1
+  (action update thread + multi-selection support).
+
+## [0.3.11] - 2026-04-27
+
+### Fixed
+- **"Send File to Telegram" no longer greyed out in the Project View**:
+  declared `ActionUpdateThread.BGT` (required by IJP 2026.1) and added
+  multi-selection support — the first non-directory local file in the
+  selection is used, and the menu item only shows when at least one file is
+  eligible.
+
+## [0.3.10] - 2026-04-27
+
+### Fixed
+- **"Send File to Telegram" actually sends now**: the Project View context-menu
+  action was a no-op stub. It now activates the IDEGram tool window, opens
+  the chat picker, and after a chat is chosen the file is dropped into that
+  chat's attachment preview just like the picker / drag-and-drop flows.
+  Folders are filtered out; non-local files (e.g. inside JARs) are rejected
+  with a notice.
+
 ## [0.3.9] - 2026-04-27
 
 ### Fixed
