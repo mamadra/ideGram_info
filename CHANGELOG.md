@@ -5,6 +5,19 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.8] - 2026-04-27
+
+### Added
+- **Drag-and-drop a file into the chat to attach it**: drop any file from
+  Finder/Explorer onto the open chat panel — the panel highlights to confirm
+  the drop, and the file appears in the attachment preview just like the
+  picker flow. Type a caption and press Send.
+
+### Notes
+- Folders are rejected silently (only individual files are attached).
+- When multiple files are dropped, the first one is taken; multi-file
+  attachments are still on the roadmap.
+
 ## [0.3.7] - 2026-04-27
 
 ### Added
