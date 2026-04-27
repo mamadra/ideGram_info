@@ -5,6 +5,20 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.9] - 2026-04-27
+
+### Fixed
+- **Notifications respect the global toggle**: turning off **Enable
+  notifications** in plugin settings now actually suppresses incoming-message
+  popups (was previously ignored).
+- **Server-side mute is honored on startup**: chats muted on another device
+  are now picked up before the chat list opens — the notification service
+  listens to TDLib's chat-list updates directly, so an inbound message on a
+  muted chat is silent even if you never opened the IDEGram tool window in
+  this session.
+- **"Enable sound" actually plays a sound**: when checked, IDEGram now beeps
+  (Java AWT) on each new-message popup; when unchecked, popups are silent.
+
 ## [0.3.8] - 2026-04-27
 
 ### Added
