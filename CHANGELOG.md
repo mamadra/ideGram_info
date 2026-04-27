@@ -5,6 +5,23 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.7] - 2026-04-27
+
+### Added
+- **Attach a file from the chat input**: a new **📎** button next to the
+  message field opens the standard file picker. Pick any image, video, audio,
+  or document — it appears in a preview row above the input, with name, size,
+  and a **×** to cancel.
+- **Caption support for attachments**: anything you type while a file is
+  attached is delivered as the message caption (matching mobile / web /
+  desktop Telegram behaviour). Empty caption sends the file alone.
+- **Automatic media classification**: images (`jpg/png/webp/gif`), videos
+  (`mp4/mov/mkv/webm`), and audio (`mp3/m4a/ogg/flac/wav`) are sent as their
+  native Telegram types so they render with thumbnails / inline players on
+  the receiving side; everything else is sent as a document.
+- **Up-front size validation**: files over 2 GB are rejected before upload
+  with a clear error, instead of failing mid-flight.
+
 ## [0.3.6] - 2026-04-26
 
 ### Added
