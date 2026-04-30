@@ -5,6 +5,31 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [0.3.13] - 2026-04-30
+
+### Added
+- Service messages now render as readable italic-grey lines in chat history
+  (member joined / left / removed, chat title or photo changed, message pinned,
+  call ended, etc.) and are excluded from unread tallies and IDE notifications.
+  Pinned-message lines are clickable and scroll to the original.
+- Voice notes: incoming voice messages render as a real voice bubble with
+  on-demand download, OGG/Opus decoding, 100-bar waveform progress, play/pause,
+  duration label, and unread red dot. Listened state syncs back to Telegram.
+- Voice recording & sending: a microphone button in the message input opens an
+  in-place recording bar (pulsing red dot, elapsed timer, Cancel/Stop). On Stop,
+  a preview row lets you replay before sending; Discard drops the take.
+  Recording is automatically cancelled when the chat is closed or switched.
+
+### Internal
+- Freemium licensing foundation: groundwork for the upcoming paid tier (single
+  Marketplace artifact, free core forever). No behavior change for existing
+  users — all current features remain free. Adds an internal `LicenseService`
+  reading the IDE's licensing facade and a hidden registry key for development
+  overrides. The Settings page shows the current license tier (always *Free*
+  today) and a Refresh button.
+
 ## [0.3.12] - 2026-04-27
 
 This is a rollup of everything since 0.3.5 — if you're upgrading from 0.3.4
