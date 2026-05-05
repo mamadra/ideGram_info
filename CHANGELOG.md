@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.15] - 2026-05-05
+
+### Added
+- **Windows x64 support**: the plugin now ships with a bundled native TDLib
+  library for Windows x64, so it works out of the box on Windows alongside
+  the existing macOS (arm64) build. No manual native-library setup required.
+
 ## [0.3.13] - 2026-04-30
 
 ### Added
