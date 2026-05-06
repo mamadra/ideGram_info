@@ -7,6 +7,142 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.22] - 2026-05-06
+
+This release closes most of the **Tier 1 parity** roadmap (chat search, polls,
+animated stickers/GIFs, read receipts) and adds the **Telegram-style album
+grid** so multi-photo/video posts render the way they do in the official client.
+A rollup of everything since 0.3.15.
+
+### Added
+
+#### Stickers and GIFs (043 + 044)
+- **Inline sticker rendering** in the chat: WebP / TGS / WebM stickers download
+  on demand, are cached in the IDE's system directory, and render inline next
+  to text without forcing the chat into preview mode. Tap-to-load fallback for
+  files larger than 1 MB and an "Auto-download stickers" toggle in Settings.
+- **Inline GIFs** with the same on-disk cache, fixed display sizing, captions
+  and per-message size labels.
+- **Animated GIF playback**: GIFs play smoothly inside the message bubble
+  (looping, silently). Decoded with a pure-Java JCodec pipeline, paced at the
+  file's native frame rate (24/25/30 fps detected from container metadata),
+  paused automatically when scrolled off-screen or when the IDE window loses
+  focus, and capped to 6 concurrent decoders so a chat full of GIFs can't
+  monopolise the CPU. On decoder failure the bubble silently falls back to
+  the static thumbnail with a ▶ overlay.
+- **Animated TGS stickers** (Lottie) — render through Skiko's bundled Skottie
+  binding directly in the Compose canvas, so they work on Android Studio
+  whose JBR strips JCEF.
+- **Animated WebM video stickers** — render through an embedded JCEF browser
+  on IDEs whose JBR ships JCEF (IntelliJ IDEA, etc); fall back to a static
+  thumbnail on JBR builds without JCEF.
+- **Big animated emoji** (single-emoji messages, Telegram's
+  `MessageAnimatedEmoji`): now appear as proper TGS animations instead of
+  showing as `[Unsupported content]`.
+- Vendored `lottie_light.min.js` (MIT) — animated stickers work fully offline.
+
+#### Polls (045)
+- **Receive and vote on polls** with the official Telegram UX:
+  - Percentages and per-option progress bars are hidden until you vote
+    (matches the desktop client).
+  - **Optimistic UI** — the option you tap looks selected within ~100 ms,
+    then reconciles against TDLib's authoritative result.
+  - **Live updates** — the bubble's totals refresh as other participants
+    vote, without the chat scroll jumping.
+  - **Change vote** by tapping a different option (single-answer regular polls).
+  - **Closed polls** are read-only with a "Final results" badge.
+  - **Vote failure** (network / server error) shows a subdued
+    "Vote failed — tap an option to retry" hint and a single INFO log line
+    per (message, query) — no popups, no log spam.
+- **Quiz polls**: after answering, the chosen option is highlighted in red if
+  wrong, the correct option is always shown in green, and a ✓ / ✗ glyph is
+  added next to the question. If the quiz has an explanation, a "Why?" link
+  reveals it inline.
+- **Multiple-answer polls**: tapping options toggles selection, a Vote button
+  enables once at least one option is selected, all picks are submitted in a
+  single TDLib call, and a "Retract vote" affordance appears afterwards.
+- "View N voters" affordance is rendered for non-anonymous polls (the modal
+  itself is a follow-up feature; for now it's a placeholder).
+
+#### In-chat search (046)
+- **Cmd-F / Ctrl-F** (or the magnifier icon in the chat header) opens a search
+  bar above the message list.
+- **Live results** — debounced TDLib `searchChatMessages`; the bar shows
+  "X of Y" and the chat auto-scrolls to the newest match within ~1 s.
+- **↑ / ↓ navigation** between matches, with wrap-around at both ends; the
+  focused match is centred in the viewport with a subtle yellow outline.
+- **Inline highlighting** — every occurrence of the query inside visible
+  messages gets a soft yellow background; the focused match's first
+  occurrence is highlighted strongly. Existing formatting (links, bold,
+  code) and link clickability are preserved.
+- **Out-of-window matches** load on demand: searching pulls the surrounding
+  chat history (`getChatHistory(fromMessageId, offset=-25, limit=50)`) so
+  search results far back in time still scroll into view.
+- **Sender filter** in group / supergroup chats — a "From" picker reuses the
+  per-chat participants list to constrain results to a specific sender.
+  Hidden in private chats.
+- **Esc** closes the bar and restores the chat scroll to where you were
+  before searching.
+- Search-match outline + inline highlight survive across album bubbles
+  (added in 047 below) — the whole album lights up when any of its members
+  is the focused match.
+
+#### Read receipts (045-read-receipts)
+- **Per-message read counter** in group chats: outgoing messages show how
+  many of the active recipients have read them as a small "5/20 read" label.
+- **Modal with the actual list** — clicking the counter opens a popup with
+  who has read and who hasn't, including avatars.
+- Counter updates live as more participants read.
+
+#### Media albums (047)
+- **Telegram-style mosaic grid** for albums (multiple photos/videos posted
+  simultaneously by the same sender — TDLib's `mediaAlbumId`). Matches the
+  official desktop client: 2 items in one row, 3 as 1+2, 4 as 2×2, up to 10
+  items in 2-3 row layouts.
+- Caption is rendered **once** below the grid (taken from the first item with
+  a non-empty caption); sender header / forward-from / reply quote appear
+  **once** at the top of the album, not per item.
+- Search match-focus outline (046) wraps the whole album bubble.
+- Pagination, sender filter, unread counter and feature-021 hidden-sender
+  filter all treat an album exactly like its members — no special exemptions.
+
+#### Settings: media cache & auto-download (044-media-settings)
+- **Auto-download toggles** for stickers and GIFs, separate from photos.
+- **Cache size threshold** — files above 1 MB show as preview-only with
+  tap-to-download.
+- **Clear all media cache** button for stickers and GIFs.
+
+### Changed
+- Polls and message-poll-content updates flow through a shared optimistic
+  reducer in the message ViewModel, replacing the earlier fire-and-forget
+  vote use-case.
+- Scroll-to-message infrastructure (used by reply-quote navigation) now
+  carries a `highlight: Boolean` flag so non-highlighting scrolls (e.g. the
+  search-bar's "restore on close" path) don't apply the yellow flash.
+
+### Fixed
+- Search results inside an album scroll to the album bubble correctly and
+  the focused-match outline wraps the whole grid.
+- Pagination at the top of the chat (loading older messages) was missing
+  the threshold trigger when albums collapsed multiple messages into a
+  single rendered item — fixed by tracking the rendered list size.
+- Animated stickers via JCEF are gracefully detected as unavailable on
+  Android Studio (whose bundled JBR lacks JCEF binaries) and fall back to
+  the static rendering automatically. TGS stickers render through Skottie
+  in all environments.
+- Search bar text-field cursor no longer jumps to position 0 on every
+  keystroke.
+
+### Internal
+- New domain types: `Poll`, `PollVoteIntent`, `QuizFeedback`, `SearchSession`,
+  `ResultsState`, `SearchMatch`, `SearchHighlightOverlay`, `MediaAlbum`,
+  `DecoderStrategy` / `AnimationPlaybackSession` / `ConcurrencyGovernor` for
+  the playback pipeline, `ScrollAndHighlight` payload extension.
+- New use cases: `SearchChatMessagesUseCase`, `VotePollUseCase` (rewritten),
+  `PlayAnimationUseCase` / `PauseAnimationUseCase`.
+- New dependency: `org.jcodec:jcodec-javase:0.2.5` (~3 MB, BSD-2) for
+  software MP4/H.264 decoding of animated GIFs.
+
 ## [0.3.15] - 2026-05-05
 
 ### Added
