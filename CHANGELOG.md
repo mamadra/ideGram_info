@@ -5,7 +5,319 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.0] - 2026-05-08
+
+> **Tier 1 parity is complete + Tier 2 work begins.** This release closes
+> the last Tier 1 gap (global search) and adds six Tier 2 polish items
+> (Forward with options + Schedule/silent send + Notifications per-chat
+> + Edit caption of sent media + Join chat by invite link + Channel post
+> comments), bundling ten major capabilities developed since the 0.3.22
+> release.
+
+### Added
+
+#### Channel post comments / discussion threads (057)
+- **"💬 N Comments" affordance** below every channel post in channels
+  with a linked discussion group. Reads "💬 Leave a comment" when the
+  count is zero. Hidden entirely on channels without a linked discussion
+  group, on regular chats, and on the comments themselves.
+- **Click the affordance** to navigate to a dedicated thread view that
+  pins the channel post as a header card at the top ("Channel: <name>"
+  label + post body / media-type placeholder) and lists the comments
+  below in chronological order. Title bar reads "Comments — <post
+  excerpt>" so the user always knows which thread they're in.
+- **Pagination**: scroll up to load older comments, same upward-scroll
+  pattern as the regular chat view (feature 028).
+- **Post a comment** by typing into the input field and pressing Enter
+  — comments dispatch into the linked discussion group with the channel
+  post as the thread anchor (TDLib's `MessageTopicThread`). If the user
+  is not yet a member of the discussion group, Telegram auto-joins them
+  server-side on first comment-send (no extra prompts).
+- **Real-time updates**: comments posted by other users appear in the
+  open thread view within ~2 seconds.
+- **Reply to a specific comment** via right-click → Reply (the existing
+  reply mechanism from feature 006 works unchanged inside the thread).
+  The "Replying to <author>" header is clickable and scrolls to the
+  original comment.
+- **Back navigation** returns to the channel chat-view at the same
+  scroll position the user was at when they clicked Comments — no
+  manual re-scroll needed.
+- **Failure UX**: send failures (banned, kicked, slow-mode) surface as
+  inline errors with the user's input preserved; the failed message is
+  NOT inserted as a fake-sent bubble.
+- **Channel post header card is non-interactive** for replies / forwards
+  / edits — those actions belong to the channel chat view, not the
+  thread view.
+
+#### Join chat by invite link (056)
+
+#### Join chat by invite link (056)
+- **🔗 icon next to the chat-list search field** opens a paste-an-invite
+  dialog. Paste a Telegram invite URL (`https://t.me/+<hash>`,
+  `t.me/+<hash>`, legacy `https://t.me/joinchat/<hash>`, or a bare
+  `+<hash>`), click Check, see a preview of the target chat (title,
+  type, member count, description), then click Join. The new chat
+  appears in the chat list within ~2 seconds and the chat-view
+  auto-opens to its message history.
+- **In-message invite-link interception**: when a chat message contains
+  a `t.me/+...` or `t.me/joinchat/...` URL, clicking the link opens the
+  same Join-by-link dialog directly — no browser round-trip — with the
+  Check already running. Non-invite URLs (`github.com/...`, public
+  `t.me/<username>`, etc.) continue to open in the system browser.
+- **Already-a-member detection**: if the user is already in the linked
+  chat, the dialog flips its primary button to "Open" and navigates to
+  the existing chat instead of issuing a duplicate join request.
+- **Admin-approval flow**: chats with admin approval enabled show a
+  preview indicator ("Joining requires admin approval") and, after
+  Join, a confirmation message ("Your request to join '<title>' was
+  sent. You will be added once an admin approves the request."). The
+  chat appears in the user's chat list automatically once the admin
+  approves.
+- **Public-username hint**: pasting a `t.me/<username>` URL surfaces a
+  hint pointing the user at the chat-list search instead of attempting
+  an invite-link API call (those URLs are not invite links).
+- **Failure UX**: malformed / expired / revoked / banned / network-drop
+  errors render inline within the dialog with the user's input
+  preserved for retry. TDLib error codes are mapped to seven
+  human-readable messages ("Invite link is invalid" / "...has expired"
+  / "...has been revoked" / "You are banned from this chat" / "Too
+  many join attempts; try again later" / "This chat is no longer
+  accessible" / "You have joined too many channels…").
+
+#### Edit caption of sent media (055)
+- **Right-click on a Photo or Video bubble you sent** → "Edit caption"
+  switches the input to caption-edit mode pre-filled with the current
+  caption text. Press Enter (or click Save) to confirm; Esc / Cancel
+  to bail. The bubble updates in place — same message, no second post —
+  and an *"edited"* marker appears under the timestamp.
+- **Add a caption to a message that didn't have one**: pick "Edit
+  caption" on a captionless photo, type a caption, hit Enter. Works
+  for the user's own outgoing media.
+- **Clear an existing caption** by submitting empty text — the caption
+  row disappears entirely, leaving just the photo or video.
+- **Eligibility-gated** entry: appears only on the user's own outgoing
+  Photo or Video messages (any sent state). Hidden for incoming media,
+  stickers, GIFs, voice notes, video notes, polls, service messages,
+  audio / document files (the latter two have no caption surface in
+  the plugin's current rendering), and messages still in flight.
+- **Placeholder text** differentiates the input mode at a glance —
+  *"Edit caption..."* vs *"Edit message..."* vs *"Type a message..."*.
+- **Failure UX**: Telegram rejects edits past the 48-hour edit window
+  and may restrict edits on certain forwarded messages. When a server
+  rejection happens, an inline toast surfaces the failure reason and
+  the bubble's existing caption is preserved (no partial state).
+
+### Fixed
+
+- **Freshly-sent media no longer flashes "edited" marker right after
+  upload completes.** The TDLib `UpdateMessageContent` push fires for
+  many reasons besides user edits (notably to swap local file IDs for
+  remote ones after a successful upload); the read-side previously
+  flipped `isEdited=true` on every such push. Now the marker flips
+  only on the dedicated `UpdateMessageEdited` event that carries the
+  real `editDate`.
+- **Outgoing messages no longer get stuck in "Sending" state in the
+  chat history** after the upload succeeds. The plugin now subscribes
+  to `UpdateMessageSendSucceeded` / `UpdateMessageSendFailed`, swapping
+  the temporary message id for the server-assigned permanent one and
+  flipping the cached send status accordingly. This was previously
+  blocking the new context-menu entries (e.g., "Edit caption", "Forward")
+  from appearing on freshly-sent media until the chat was reopened.
+
+#### Notifications per-chat (054)
+- **Right-click any chat in the chat list** to open a context menu with
+  notification controls — four mute presets (*Mute for 1 hour*, *8 hours*,
+  *1 day*, *Forever*), an *Unmute* entry, and a *Disable / Enable sound*
+  toggle. Two clicks to mute, two clicks to unmute, no need to leave the
+  IDE for Telegram Desktop.
+- **Cross-client sync**: muting a chat from inside the IDE flips the same
+  chat to muted in the user's mobile / desktop / web Telegram within ~5
+  seconds — Telegram's server is the source of truth.
+- **Conditional menu entries**:
+  - When the chat is **unmuted**: the menu shows the four mute presets
+    plus a *Disable sound* (or *Enable sound*) toggle. No *Unmute* entry.
+  - When the chat is **muted**: the menu shows *Unmute* alongside the
+    four mute presets (so re-muting with a different duration is one
+    click, not two). The sound toggle is hidden — mute already means
+    no sound, so the toggle would be misleading.
+- **Auto-resume on mute expiry**: when a finite mute (e.g., 1 hour) runs
+  out server-side, the chat-list bell-off indicator clears within
+  ~3 seconds and the very next incoming message produces a normal IDE
+  notification — no IDE restart, no manual refresh.
+- **Failure UX**: a network drop during a mute / unmute / sound action
+  preserves the chat's existing state (no partial / optimistic update)
+  and surfaces a transient red toast at the top of the chat-list panel
+  inviting the user to retry.
+- **Builds on feature 022 (sync mute settings)**: the existing read
+  pipeline that already honours per-chat mute / sound state for IDE
+  notifications now has its write counterpart — closing the loop on
+  notification preferences.
+
+#### Schedule send / silent send / send when online (053)
+- **Chevron (▾) next to Send** opens a dropdown with three additional send
+  modes — *Send without sound*, *Schedule message*, *Send when online*.
+  Default Send button click is unchanged: same one-keystroke text dispatch
+  as before.
+- **Send without sound** dispatches immediately but skips the recipient's
+  notification ping (sets TDLib's `disableNotification`). Available in
+  every chat type — private, group, supergroup, channel-where-poster,
+  Saved Messages, and bot chats.
+- **Schedule message** opens a date/time picker with two presets
+  (*Tomorrow 9 AM* / *Next Monday 9 AM*) and a custom row (yyyy-MM-dd +
+  24-hour HH:mm). Past dates and dates more than 1 year ahead are
+  rejected inline; Confirm enables only when the chosen moment is valid.
+  After Confirm a transient toast confirms the scheduled time; the
+  message dispatches server-side at the chosen moment with TDLib's
+  `MessageSchedulingStateSendAtDate`.
+- **Send when online** queues the message server-side until the recipient's
+  last-seen flips to online (TDLib's `MessageSchedulingStateSendWhenOnline`).
+  The option is **only visible** in 1-on-1 private chats with non-bot users —
+  hidden in groups, channels, supergroups, Saved Messages, and bot chats
+  (Telegram restricts the feature to private user-to-user contexts).
+- **Keyboard shortcuts**: *Cmd-Shift-Enter* (macOS) / *Ctrl-Shift-Enter*
+  (other) → silent send; *Cmd-Shift-S* / *Ctrl-Shift-S* → opens the
+  schedule dialog. Both work without leaving the keyboard.
+- **Multi-attach + voice notes** all respect the chosen modifier — silent
+  / scheduled / when-online apply uniformly to text, single attachment,
+  multi-file album, and voice-note dispatches.
+- **Edit-mode safety**: the chevron is hidden when editing an existing
+  message — there's no "edit-and-schedule" semantic in Telegram.
+- **Failure UX**: a network drop or server rejection preserves the input
+  + attachments and surfaces an inline snackbar; nothing is silently lost.
+
+#### Forward with options (052)
+- **Right-click → Forward → pick chat → options dialog** appears with two
+  checkboxes — *Hide sender* and *Hide caption* — before the actual
+  dispatch. Confirm button is autofocused; Enter sends with both
+  checkboxes off, preserving today's exact UX with one extra keypress.
+- **Hide sender** strips the "Forwarded from <X>" header — the recipient
+  sees the message in the user's name as if they wrote it themselves.
+  Works for any forwardable message type (text, media, polls, stickers).
+- **Hide caption** strips the original caption from forwarded media. The
+  toggle is hidden entirely for text-only, voice, video-note, poll,
+  sticker and GIF sources where there's no caption to remove.
+- **Cancel paths**: Esc / Cancel inside the options dialog returns to the
+  chat picker (re-pick destination); Esc / Cancel inside the picker
+  aborts the whole forward.
+- **Failure handling**: when the dispatch fails (network drop, permission
+  denied), the dialog stays open with a red error line + a Retry button
+  that re-invokes with the same toggle values. No silent retries.
+
+#### Global search across chats, messages and users (051)
+- **Three-section global search** in the chat-list panel — Chats / Messages
+  / Global — driven by a single search field above the list. Cmd-K (macOS)
+  or Ctrl-K (other) focuses the search field from anywhere in the IDEGram
+  tool window; Esc clears it.
+- **Chats section** filters the existing list by chat title, contact name
+  or username. Local-only, sub-200 ms, works offline.
+- **Messages section** runs a Telegram-side full-text search across ALL
+  the user's chats (queries ≥ 4 characters, after a 300 ms debounce). Each
+  hit shows the chat title, sender display name, a snippet with the
+  matched substring highlighted (reuses the in-chat search renderer from
+  feature 046), and a relative date. Click a hit → the chat opens scrolled
+  to that exact message with the highlight visible in the bubble.
+- **Global section** surfaces contacts and public chats matching the
+  query, deduplicated against chats already in the user's list. Click on
+  a user → private chat opens. Click on a public channel → auto-joins
+  (if not yet a member) and opens.
+- **Cancellation under fast typing** — every keystroke cancels in-flight
+  TDLib calls via `flatMapLatest`, so the user never sees flickering
+  results from stale queries.
+- Failed message searches surface an inline Retry control; the local
+  Chats filter keeps working even when offline.
+
+#### Multi-file album send (050)
+- **Attach many files at once** — drag-and-drop a list onto the chat or
+  multi-select via the attach button. The queue panel above the input bar
+  shows one thumbnail per item (photo via inline decode; ▶ overlay for
+  video; 🎵 / 📎 icons for audio / document) with per-item × button, a
+  "Clear all" link and a running `N items, X MB` label.
+- **Albums match Telegram's mosaic grid** (recipient-side, feature 047) —
+  2 to 10 photos / videos send as a single bubble with the caption
+  attached to the first item; queue size 1 keeps the existing solo-message
+  flow.
+- **Auto-split at 10 items** — 25 photos go out as 10 + 10 + 5 albums in
+  chronological order, caption only on the first batch. Dispatch is
+  strictly sequential (TDLib forbids parallel album sends to the same
+  chat).
+- **Mixed types split per Telegram rules** — `photo + video` together,
+  `audio` alone, `document` alone, voice notes never in album. A mixed
+  queue (e.g. 6 photos + 3 audio) sends two bubbles — one mosaic + one
+  audio album — preserving order.
+- **Real-time upload progress** — each batch transitions
+  `Pending → Dispatching → Uploading(N%) → Sent`. Progress is aggregated
+  from `UpdateFile` across the batch's files; completion is detected
+  authoritatively via `UpdateMessageSendSucceeded`. The panel renders a
+  per-batch progress arc + percentage.
+- **Pause-on-failure with Retry** — if a batch fails (network drop,
+  permission), the FSM pauses, the failed tile gets a Retry control + a
+  Cancel link in the panel header. Retry resumes from the failed batch;
+  Cancel returns the remaining files to the queue for editing.
+- **Hard 2 GB per-file cap** — oversized files in the queue show a red
+  ⚠ icon and disable the Send button until removed.
+
+#### Typing indicator (049)
+- **Real display names** instead of "User <id>" — typing users now show
+  with the same name they use on their messages. "Someone" gracefully
+  fills in when the sender is a deleted account; in private chats the
+  name is omitted entirely (just "typing…") matching Telegram desktop.
+- **Verb-phrasings for 12 chat-action types** — "is recording a voice
+  message…", "is sending a photo…", "is picking a sticker…", "is sending
+  a file…", and so on; falls back to "is typing…" for unknown action
+  types.
+- **Multi-user merge in groups** — "<A> and <B> are typing", "<A>, <B>
+  and N more are typing", "N people are typing" with a Telegram-style
+  cap at 2 visible names. Mixed actions render as "<A> is typing, <B>
+  is recording a voice message" for ≤2 actors.
+- **5-second client-side timeout** — TDLib emits no explicit stop event
+  for typing actions; the indicator auto-evicts stale actors at 1 Hz
+  granularity. Self-typing is suppressed; channels and the spec-021
+  hidden-sender filter are honoured.
+
+#### Custom-emoji reactions (048)
+- **Attach many files at once** — drag-and-drop a list onto the chat or
+  multi-select via the attach button. The queue panel above the input bar
+  shows one thumbnail per item (photo via inline decode; ▶ overlay for
+  video; 🎵 / 📎 icons for audio / document) with per-item × button, a
+  "Clear all" link and a running `N items, X MB` label.
+- **Albums match Telegram's mosaic grid** (recipient-side, feature 047) —
+  2 to 10 photos / videos send as a single bubble with the caption
+  attached to the first item; queue size 1 keeps the existing solo-message
+  flow.
+- **Auto-split at 10 items** — 25 photos go out as 10 + 10 + 5 albums in
+  chronological order, caption only on the first batch. Dispatch is
+  strictly sequential (TDLib forbids parallel album sends to the same
+  chat).
+- **Mixed types split per Telegram rules** — `photo + video` together,
+  `audio` alone, `document` alone, voice notes never in album. A mixed
+  queue (e.g. 6 photos + 3 audio) sends two bubbles — one mosaic + one
+  audio album — preserving order.
+- **Real-time upload progress** — each batch transitions
+  `Pending → Dispatching → Uploading(N%) → Sent`. Progress is aggregated
+  from `UpdateFile` across the batch's files; completion is detected
+  authoritatively via `UpdateMessageSendSucceeded`. The panel renders a
+  per-batch progress arc + percentage.
+- **Pause-on-failure with Retry** — if a batch fails (network drop,
+  permission), the FSM pauses, the failed tile gets a Retry control + a
+  Cancel link in the panel header. Retry resumes from the failed batch;
+  Cancel returns the remaining files to the queue for editing.
+- **Hard 2 GB per-file cap** — oversized files in the queue show a red
+  ⚠ icon and disable the Send button until removed.
+
+### Fixed
+
+- Reactions are no longer dropped silently — the previous implementation
+  scaffolded the field but never populated it from `MessageReaction`.
+
+### Known limitations
+
+- Animated WebM custom-emoji and stickers render the static thumbnail.
+  Animating them needs a VP9 decoder which Skia bundled with Compose Desktop
+  doesn't ship; planned for v2 (either ffmpeg-CLI transcode in cache or a
+  bundled libvpx native).
+- The reaction picker (long-press / right-click → "React") UI affordance is
+  not wired up yet; the underlying picker, "Custom Emoji" section and toggle
+  paths are all in place — only the popup host is missing.
 
 ## [0.3.22] - 2026-05-06
 
