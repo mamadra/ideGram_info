@@ -9,6 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+#### Create new chat / group / channel (059)
+- **`+` icon** in the chat-list header (next to 🔗 invite and ⚙
+  settings) opens a small popup menu with three entries: **New group**,
+  **New channel**, **New private chat**.
+- **New group** — two-step dialog. Step 1 is a multi-select contact
+  picker with search-as-you-type (≤300 ms filter), a chip bar of
+  selected contacts with one-click removal, and a "Next" button that
+  enables once at least one contact is picked. Step 2 is a Name +
+  optional Description form with a Create button gated by a
+  non-empty name. **Back navigation** from step 2 to step 1 preserves
+  the typed name. Cancel / Esc / outside-click leave zero
+  side-effects. On success, the new group appears in the chat list
+  within ~5 seconds and the plugin navigates into its message view
+  with the composer focused.
+- **New channel** — single-step form: Name (required), Description
+  (optional), Public/Private toggle (defaults to Private), Username
+  field (visible only when Public, with `t.me/` prefix label), and
+  an expandable "Add initial subscribers (optional)" picker that
+  filters out bots. Local username validation runs as you type
+  (5–32 chars, must start with a letter, alphanumeric + underscore,
+  no consecutive underscores, no trailing underscore) with an inline
+  hint per rule. On Create with a taken username, the dialog stays
+  open with an inline "This username is already taken" error and
+  **the freshly-created channel is rolled back via `DeleteChat`** —
+  no half-created private channel left behind when the user
+  explicitly asked for public. All other entered fields (name,
+  description, subscribers) are preserved verbatim so the user can
+  change just the username and retry. Initial subscribers are added
+  via `AddChatMembers` after creation; subscriber-add failures
+  surface as a toast but do NOT roll back the channel itself.
+- **New private chat** — single-step contact picker. Click a row to
+  open (or create-on-first-send) a 1-on-1 chat with that contact;
+  reuses the existing `OpenPrivateChatUseCase` with no duplicated
+  chat-creation logic.
+
 #### Block list management (058)
 - **⚙ Settings entry** in the chat-list header (next to the 🔗 invite
   icon) opens the plugin Settings panel from inside the tool window,
