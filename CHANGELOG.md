@@ -7,90 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-09
+
+> **First stable release.** Bundles three more major Tier 2 features
+> on top of everything in 0.4.0 — block list management, create-chat
+> /group/channel, and chat folders. If you're upgrading directly from
+> 0.3.22 (the last release What's-New popup may have shown), this
+> release contains **thirteen** new top-level capabilities accumulated
+> across the entire 0.4 cycle.
+
 ### Added
 
-#### Create new chat / group / channel (059)
-- **`+` icon** in the chat-list header (next to 🔗 invite and ⚙
-  settings) opens a small popup menu with three entries: **New group**,
-  **New channel**, **New private chat**.
-- **New group** — two-step dialog. Step 1 is a multi-select contact
-  picker with search-as-you-type (≤300 ms filter), a chip bar of
-  selected contacts with one-click removal, and a "Next" button that
-  enables once at least one contact is picked. Step 2 is a Name +
-  optional Description form with a Create button gated by a
-  non-empty name. **Back navigation** from step 2 to step 1 preserves
-  the typed name. Cancel / Esc / outside-click leave zero
-  side-effects. On success, the new group appears in the chat list
-  within ~5 seconds and the plugin navigates into its message view
-  with the composer focused.
-- **New channel** — single-step form: Name (required), Description
-  (optional), Public/Private toggle (defaults to Private), Username
-  field (visible only when Public, with `t.me/` prefix label), and
-  an expandable "Add initial subscribers (optional)" picker that
-  filters out bots. Local username validation runs as you type
-  (5–32 chars, must start with a letter, alphanumeric + underscore,
-  no consecutive underscores, no trailing underscore) with an inline
-  hint per rule. On Create with a taken username, the dialog stays
-  open with an inline "This username is already taken" error and
-  **the freshly-created channel is rolled back via `DeleteChat`** —
-  no half-created private channel left behind when the user
-  explicitly asked for public. All other entered fields (name,
-  description, subscribers) are preserved verbatim so the user can
-  change just the username and retry. Initial subscribers are added
-  via `AddChatMembers` after creation; subscriber-add failures
-  surface as a toast but do NOT roll back the channel itself.
-- **New private chat** — single-step contact picker. Click a row to
-  open (or create-on-first-send) a 1-on-1 chat with that contact;
-  reuses the existing `OpenPrivateChatUseCase` with no duplicated
-  chat-creation logic.
+- **Chat folders / global filters (060)** — the folder bar in the chat-list header now shows your user-defined folders the official-client way: emoji icons + per-folder **unread badges** (live from `UpdateUnreadChatCount`) + "All Chats" pinned first. Selection **persists across IDE restarts** (`IDEGramSettingsState.activeFolderId`). Bar auto-hides on search and on accounts with zero folders.
+- **Manage Folders panel (060)** — Settings → Manage folders lets you add / rename / delete / reorder folders without leaving the IDE. Add dialog has Name + 21-emoji icon picker + chat-type checkboxes (Contacts / Non-contacts / Bots / Groups / Channels) + exclude flags (Muted / Read / Archived). All changes round-trip via TDLib and reach the user's mobile within ~5 s. Hitting the server-side folder cap (10 for free accounts) surfaces an inline "Folder limit reached" error with the form preserved.
+- **Quick folder presets (060)** — Unread / Personal / Groups / Channels / Bots pre-fill the Add-folder form so a common folder is two clicks.
+- **Create new chat / group / channel (059)** — `+` icon in the chat-list header opens a popup with three entries. **New group**: two-step dialog (multi-select contact picker → Name + Description); back-nav preserves typed name. **New channel**: single-step form with Public/Private toggle, t.me/-prefixed Username field with live local validation, optional bot-filtered subscribers picker; on a taken username Telegram's failure rolls the freshly-created channel back via `DeleteChat` so no orphan private channel survives. **New private chat**: single-select picker that opens the 1-on-1 chat via the existing `OpenPrivateChatUseCase`.
+- **Block list management (058)** — ⚙ Settings entry in the chat-list header opens the plugin Settings panel; from there a "Manage blocked users" panel paginates the user's blocked senders with per-row Unblock buttons. The user-profile overlay gets a Block / Unblock toggle with a confirmation dialog. Eager refresh after own-account actions because TDLib's `UpdateChatBlockList` push doesn't reliably fire for own writes.
+- **Chat profile card for groups / supergroups / channels (058 follow-up)** — clicking the title in a non-private chat opens an info card with description, invite link, linked-chat indicator, admin / restricted / banned counts, and the first 50 members (via `GetSupergroupMembers(Recent)` or `GetBasicGroupFullInfo.members`). Each member row shows their avatar, display name, role label (Creator / Admin / Restricted / Banned), Telegram custom title (`ChatMember.tag`), and a Bot pill if applicable. Per-member actions: 💬 Open chat (creates a 1-on-1 chat) and 🚫 Block / Unblock (with inline-toast feedback). Roster hidden for channels and `hasHiddenMembers` supergroups.
+- **Channel post comments / discussion threads (057)** — "💬 N Comments" / "Leave a comment" affordance below channel posts with a linked discussion group. Click opens a dedicated thread view pinning the channel post as a header card; comments paginate, real-time-update, and accept replies. Post a comment by typing — Telegram auto-joins the discussion group server-side on first send.
+- **Join chat by invite link (056)** — 🔗 icon in the chat-list opens a paste-an-invite dialog supporting four URL formats. Paste → Check shows the chat preview (title, type, member count, description) → Join. **In-message invite-link interception** — clicking a `t.me/+...` URL inside a message opens the same dialog directly, no browser round-trip. Already-a-member detection, admin-approval flow, public-username hint, seven mapped human-readable error messages.
+- **Edit caption of sent media (055)** — right-click on your own Photo / Video bubble → "Edit caption" pre-fills the current caption; Enter to save, Esc to cancel. Add a caption to captionless media or clear an existing one by submitting empty text. Telegram's 48-hour edit window is enforced server-side.
+- **Notifications per-chat (054)** — right-click a chat in the chat list to open a context menu with four mute presets (1 hour / 8 hours / 1 day / Forever), an Unmute entry, and a Disable / Enable sound toggle. Cross-client sync within ~5 s. Auto-resume on mute expiry — the bell-off indicator clears server-side and the next message produces a normal IDE notification.
+- **Schedule / silent / send-when-online (053)** — chevron (▾) next to Send opens a dropdown with three modes. Schedule opens a date/time picker with presets (Tomorrow 9 AM / Next Monday 9 AM) and a custom row; past dates and dates >1 year ahead are rejected inline. Send-when-online queues the message until the recipient's last-seen flips online (1-on-1 private chats only, non-bot). Cmd-Shift-Enter for silent, Cmd-Shift-S for schedule. Multi-attach + voice notes respect the chosen modifier.
+- **Forward with options (052)** — right-click → Forward → pick chat → options dialog with Hide sender + Hide caption checkboxes (Hide caption is conditionally hidden when the source has no caption). Failure preserves the dialog with a Retry button.
+- **Global search across chats, messages and users (051)** — three-section panel (Chats / Messages / Global) in the chat list. Cmd-K (macOS) / Ctrl-K (other) focuses the search field. Messages section runs Telegram-side full-text search (≥4 chars, 300 ms debounce); click a hit → chat opens scrolled to the exact message with the in-bubble highlight visible. Global section surfaces contacts + public chats deduped against existing chats. `flatMapLatest` cancellation prevents stale flicker under fast typing.
+- **Multi-file album send (050)** — drag-and-drop multiple files or multi-select via the attach button. Queue panel shows per-item thumbnails (×, "Clear all", "N items, X MB"). Albums match Telegram's mosaic grid (2–10 photos / videos per bubble). Auto-split at 10 items; mixed types split per Telegram rules (photo+video together, audio alone, document alone, voice never in album). Real-time per-batch upload progress; pause-on-failure with Retry. Hard 2 GB per-file cap.
+- **Typing indicator with real names (049)** — replaces "User <id>" with proper display names. Twelve verb-phrasings (recording voice, sending photo, picking sticker, …). Multi-user merge ("<A> and <B> are typing"; "<A>, <B> and N more"). 5-second client-side eviction for stale actors.
+- **Custom-emoji reactions (048)** — render and toggle custom-emoji reactions alongside standard emoji reactions. Reactor avatars stack in-bubble. Resolved via the new in-memory `CustomEmojiCache` (sticker files reuse the on-disk cache from feature 043).
 
-#### Block list management (058)
-- **⚙ Settings entry** in the chat-list header (next to the 🔗 invite
-  icon) opens the plugin Settings panel from inside the tool window,
-  including a new "Manage blocked users" entry that opens a dedicated
-  panel.
-- **Blocked users panel** lists every blocked sender with their display
-  name and an Unblock button. The list is paginated (50 entries per
-  page, scroll-to-load), shows a friendly empty state when nothing is
-  blocked, and refreshes eagerly after own-account block / unblock
-  actions (TDLib's `UpdateChatBlockList` push does not reliably fire for
-  the user's own actions, so we don't rely on it alone).
-- **Block / Unblock toggle on the user profile card.** The user-info
-  overlay (opened by clicking a private chat's title or any user's
-  name in a group) now has a Block button when the user is not blocked
-  and an Unblock button when they are. A confirmation dialog appears
-  before blocking to prevent accidents.
+### Fixed
 
-#### Chat profile card — groups / supergroups / channels (058 follow-up)
-- **Click the title of a group, supergroup, or channel** in the
-  message-view header to open a chat-info card. The card shows: avatar
-  placeholder (initial letter), title, kind (Group / Supergroup /
-  Channel) with member count, description, invite link, linked-chat
-  indicator, and counts of admins / restricted / banned members (when
-  available).
-- **Member roster** lists up to the first 50 members fetched via
-  `GetSupergroupMembers(Recent)` for supergroups or
-  `GetBasicGroupFullInfo.members` for legacy groups. Each row shows the
-  member's avatar placeholder, display name, role label (Creator /
-  Admin / Restricted / Banned), Telegram custom title (`ChatMember.tag`,
-  rendered in quotes under the name with the role's color), and a Bot
-  pill if applicable.
-- **Per-member actions**: 💬 Open chat opens a 1-on-1 private chat with
-  that user (and closes the overlay). 🚫 Block immediately blocks the
-  user and updates the row inline — the row gets a red highlight, a
-  "Blocked" badge appears next to the name, the button swaps to
-  Unblock, and a green toast banner confirms the action at the top of
-  the card. Blocking and unblocking are reversible from the same row
-  without leaving the card.
-- **Roster hidden** for channels (Telegram does not expose subscribers)
-  and for supergroups where `hasHiddenMembers` or `canGetMembers` is
-  false. The card still renders the rest of the metadata in those
-  cases.
-- **Two-phase load**: the basic title + kind appear immediately, then
-  the full info + member list stream in below. Errors during the full
-  load keep the basic card on screen and surface the failure as a
-  toast — the card never falls back to a blank error state once it has
-  data to show.
+- **Freshly-sent media no longer flashes "edited" marker right after
+  upload completes.** TDLib's `UpdateMessageContent` push fires for
+  many reasons besides user edits (notably to swap local file IDs for
+  remote ones); the read-side previously flipped `isEdited=true` on
+  every such push. Now the marker flips only on the dedicated
+  `UpdateMessageEdited` event that carries the real `editDate`.
+- **Outgoing messages no longer get stuck in "Sending" state** in the
+  chat history after the upload succeeds. The plugin now subscribes to
+  `UpdateMessageSendSucceeded` / `UpdateMessageSendFailed`, swapping
+  the temporary message id for the server-assigned permanent one and
+  flipping the cached send status accordingly.
+- **Chat folders weren't loading in the tool window** for accounts
+  with folders configured server-side. TDLib delivers the folder set
+  exactly once early in the auth flow via `UpdateChatFolders`, but
+  the chat-list view-model is constructed later (when the user opens
+  the tool window) — so the push was lost to the SharedFlow's
+  `replay = 0` semantics. Folders now flow through a sticky-cache
+  StateFlow at the repository level so late-subscribing components
+  always see the latest known set.
+- **Reactions are no longer dropped silently** — the previous
+  implementation scaffolded the field but never populated it from
+  `MessageReaction`.
+
+### Known limitations
+
+- Animated WebM custom-emoji and stickers render the static thumbnail.
+  Animating them needs a VP9 decoder which Skia bundled with Compose
+  Desktop doesn't ship; planned for v2 (either ffmpeg-CLI transcode in
+  cache or a bundled libvpx native).
+- The reaction picker (long-press / right-click → "React") UI
+  affordance is not wired up yet; the underlying picker, "Custom Emoji"
+  section and toggle paths are all in place — only the popup host is
+  missing.
 
 ## [0.4.0] - 2026-05-08
 
