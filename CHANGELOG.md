@@ -5,6 +5,58 @@ All notable changes to the IDEGram plugin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+#### Block list management (058)
+- **⚙ Settings entry** in the chat-list header (next to the 🔗 invite
+  icon) opens the plugin Settings panel from inside the tool window,
+  including a new "Manage blocked users" entry that opens a dedicated
+  panel.
+- **Blocked users panel** lists every blocked sender with their display
+  name and an Unblock button. The list is paginated (50 entries per
+  page, scroll-to-load), shows a friendly empty state when nothing is
+  blocked, and refreshes eagerly after own-account block / unblock
+  actions (TDLib's `UpdateChatBlockList` push does not reliably fire for
+  the user's own actions, so we don't rely on it alone).
+- **Block / Unblock toggle on the user profile card.** The user-info
+  overlay (opened by clicking a private chat's title or any user's
+  name in a group) now has a Block button when the user is not blocked
+  and an Unblock button when they are. A confirmation dialog appears
+  before blocking to prevent accidents.
+
+#### Chat profile card — groups / supergroups / channels (058 follow-up)
+- **Click the title of a group, supergroup, or channel** in the
+  message-view header to open a chat-info card. The card shows: avatar
+  placeholder (initial letter), title, kind (Group / Supergroup /
+  Channel) with member count, description, invite link, linked-chat
+  indicator, and counts of admins / restricted / banned members (when
+  available).
+- **Member roster** lists up to the first 50 members fetched via
+  `GetSupergroupMembers(Recent)` for supergroups or
+  `GetBasicGroupFullInfo.members` for legacy groups. Each row shows the
+  member's avatar placeholder, display name, role label (Creator /
+  Admin / Restricted / Banned), Telegram custom title (`ChatMember.tag`,
+  rendered in quotes under the name with the role's color), and a Bot
+  pill if applicable.
+- **Per-member actions**: 💬 Open chat opens a 1-on-1 private chat with
+  that user (and closes the overlay). 🚫 Block immediately blocks the
+  user and updates the row inline — the row gets a red highlight, a
+  "Blocked" badge appears next to the name, the button swaps to
+  Unblock, and a green toast banner confirms the action at the top of
+  the card. Blocking and unblocking are reversible from the same row
+  without leaving the card.
+- **Roster hidden** for channels (Telegram does not expose subscribers)
+  and for supergroups where `hasHiddenMembers` or `canGetMembers` is
+  false. The card still renders the rest of the metadata in those
+  cases.
+- **Two-phase load**: the basic title + kind appear immediately, then
+  the full info + member list stream in below. Errors during the full
+  load keep the basic card on screen and surface the failure as a
+  toast — the card never falls back to a blank error state once it has
+  data to show.
+
 ## [0.4.0] - 2026-05-08
 
 > **Tier 1 parity is complete + Tier 2 work begins.** This release closes
