@@ -7,6 +7,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-05-10
+
+> Headline release of the **encrypted snippet share** feature plus an
+> in-chat **link-preview card** and a clean-up of the editor right-click
+> menu. Snippets now leave the IDE as a single short URL whose
+> ciphertext lives on `idegram.app` and whose AES-256-GCM key never
+> reaches the server — paste anywhere, recipients decrypt locally.
+
+### Added
+
+- **Share via IDEGram (061)** — new editor context-menu action that
+  encrypts the selection (or whole file when nothing is selected) with
+  AES-256-GCM client-side, uploads only the ciphertext + IV +
+  metadata to `https://idegram.app/api/snippets`, and builds a
+  shareable URL of the form `https://idegram.app/s/<id>#<key>`. The
+  decryption key lives in the URL fragment which (per HTTP spec) the
+  server never sees — verified by a unit test that scans every
+  captured request URL / headers / body for the key string. The URL
+  is copied to the clipboard AND opens an in-app **chat picker**
+  (mirrors the Send-File flow): pick a chat → message goes through
+  `TdApi.SendMessage`, you land on that chat with the message visible.
+  Dismiss the picker to share the URL outside Telegram.
+- **Snippet privacy toggles** — Settings → Code Sharing now has a
+  "Share via IDEGram (encrypted URL)" subsection with two checkboxes:
+  *Include filename in metadata* and *Include username in metadata*.
+  When OFF, the corresponding field is omitted entirely from the
+  unencrypted metadata payload (filename is always inside the
+  encrypted blob; only its appearance in the OG card and landing-page
+  header is suppressed).
+- **License-gating ready** for "Share via IDEGram" — an IntelliJ
+  registry key `idegram.snippet.requiresPaid` (default OFF in v1)
+  flips the action to Paid-only without re-shipping the plugin. When
+  ON, Free / Trial users see an "Upgrade IDEGram" balloon at
+  invocation; **no network request is made**. The check consults the
+  current tier at click time (mid-session tier changes respected).
+- **Endpoint override for local dev** — registry key
+  `idegram.snippet.endpoint` (default `https://idegram.app`) lets a
+  developer point the plugin at a locally-running `idegram-web`
+  instance.
+- **Inline link-preview cards** — text messages that contain a URL
+  now render TDLib's resolved preview as a card under the bubble,
+  same pattern as the official Telegram clients: site name, title,
+  description, author, and the OG image when present. Image loads
+  via the existing media-download pipeline (fast minithumbnail, then
+  full-resolution swap). Clicking anywhere on the card opens the URL
+  in the default browser.
+
+### Changed
+
+- **Editor context menu cleanup** — the nested "IDEGram ▶" submenu
+  with the three stub actions (Share Code to Telegram / Share Git
+  Diff / Share Stacktrace) is gone. Right-click in the editor now
+  shows **"Share via IDEGram"** directly. The Project View context
+  menu keeps the working **"Send File to Telegram"** entry, also
+  flattened (no submenu wrapper).
+
+### Removed
+
+- Stub actions and their orphaned use cases / view models /
+  preview dialog: `ShareCodeAction`, `ShareDiffAction`,
+  `ShareStacktraceAction`, `ShareCodeUseCase`, `ShareDiffUseCase`,
+  `ShareStacktraceUseCase`, `ShareFileUseCase`, `ShareViewModel`,
+  `SharePreviewDialog`. None of these had a finished
+  ChatPickerDialog wire-up; their replacements ("Share via IDEGram"
+  for snippets, "Send File to Telegram" for project-view files)
+  are both fully wired.
+
+### Security
+
+- The AES-256-GCM key for "Share via IDEGram" is generated per
+  snippet via `SecureRandom` and **never persisted, logged, or sent
+  over the wire**. The key is base64url-encoded into the URL
+  fragment client-side AFTER the upload completes — a unit test
+  scans every captured HTTP exchange (URL + headers + body) for the
+  key substring and refuses to merge if it leaks (SC-004).
+
 ## [1.0.0] - 2026-05-09
 
 > **First stable release.** Bundles three more major Tier 2 features
