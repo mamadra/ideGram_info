@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Pinned messages (062)** — a thin pinned-message banner now appears
+  under the chat header for any chat with at least one pinned message,
+  mirroring the official Telegram client. The banner shows a single-line
+  preview of the currently-displayed pin plus an `N OF M` pager when
+  more than one message is pinned. Click anywhere on the banner →
+  scroll to that pin (chat history is back-loaded around the target
+  message when it's older than the cached window) AND advance the
+  carousel to the next pin. Wraps back to the first pin after the
+  last one (carousel). `×` on the right dismisses the banner for
+  this chat; dismissal persists across IDE restarts and auto-resets
+  on the next *new* pin.
+- **Pin / Unpin context-menu entries** — right-click on a message
+  exposes "Pin message" (visible only when the current user has
+  pin permission in the chat) or "Unpin" (visible only on
+  already-pinned messages, when permission allows). Pinning in a
+  group opens a confirmation dialog with a "Notify all members"
+  checkbox (default ON); private chats skip the dialog's notify
+  option. Permission is derived from `Chat.permissions` plus the
+  user's `ChatMember.status` (Creator / Administrator's
+  `canPinMessages` right / chat-level `canPinMessages` flag).
+  All affordances are **hidden** — never shown disabled — when
+  permission is missing.
+- **Cross-client pin / unpin sync** — `UpdateMessageIsPinned`
+  pushes from TDLib update the banner and the chat-history view
+  in real time (≤5 s after another client pins / unpins). The
+  TDLib `MessagePinMessage` service-message variant renders as
+  the existing "X pinned a message" service bubble in the chat
+  history (the renderer plumbing was already in place from spec
+  042; this release wires the mapper arm).
+
+### Fixed
+
+- Pinned-message lookup now uses `SearchChatMessages(filter=Pinned)`
+  exclusively instead of `GetChatPinnedMessage`. The latter returned
+  varied error codes (`PINNED_MESSAGE_NOT_FOUND`,
+  `MESSAGE_NOT_FOUND`, plus chat-specific transient errors) which
+  could leave the plugin showing no banner even though Telegram
+  itself had pinned messages.
+
 ## [1.3.0] - 2026-05-10
 
 > Headline release of the **encrypted snippet share** feature plus an
