@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-05-11
+
+> Adds **one-click stacktrace sharing** from the Run / Debug /
+> Logcat consoles and rolls forward the same headline additions
+> from 1.4.0 — pinned messages and Saved Messages — so users
+> coming straight from earlier versions see everything new at
+> once.
+
+### Added
+
+- **Share stacktraces from the console** — right-click anywhere
+  inside the Run, Debug, or Android Logcat tool window and pick
+  **Share via IDEGram**. If you have a selection it's used
+  as-is; otherwise the action auto-detects the surrounding
+  stacktrace block (Java, Kotlin, Android crash, JS / Node —
+  including `Caused by` chains) and shares the whole thing. A
+  small `// From "<run-config>" · <date> · IDEGram` header is
+  prepended so the recipient sees where it came from. Colour
+  codes from coloured Gradle / npm / pytest output are stripped
+  automatically. A new toggle in Settings → IDEGram → Code
+  Sharing lets you turn the header off.
+- **Pinned messages** — open any chat that has pinned messages
+  and you'll see a slim bar under the chat title showing the
+  pinned content. Click it to jump to that message; if there
+  are several pinned messages, the bar shows "1 of N" and each
+  click cycles through them. Right-click any message →
+  **Pin message** (or **Unpin** on a pinned one) to manage pins
+  yourself when you have permission, with the usual "Notify all
+  members" toggle for groups. The bar updates live when someone
+  else pins or unpins, and you can hide it for the current chat
+  with the × — it'll come back when a new message is pinned.
+- **Saved Messages** — your chat with yourself now lives at the
+  very top of the chat list with a 🔖 bookmark icon and the
+  title "Saved Messages" (instead of your own name). Click to
+  open your personal scratchpad for snippets, links, and notes
+  — everything syncs to every other Telegram client you're
+  signed in to.
+- **Send to Saved Messages** — right-click in any source file →
+  *Send to Saved Messages* drops the current selection (or the
+  whole file if nothing is selected) straight into your Saved
+  Messages chat. No chat picker, no clicks; long content is
+  split into multiple messages automatically.
+- **Save** — right-click any message in any chat → *Save*
+  forwards it into your Saved Messages with one click,
+  preserving the original sender's name.
+
 ## [1.4.0] - 2026-05-11
 
 > Two big quality-of-life additions: **pinned messages** appear under the
