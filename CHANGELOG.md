@@ -7,46 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-05-11
+
+> Two big quality-of-life additions: **pinned messages** appear under the
+> chat header just like in any official Telegram client, and your
+> **Saved Messages** chat finally has a proper home at the top of the
+> chat list with one-click "save it for later" shortcuts from the editor
+> and from any chat.
+
 ### Added
 
-- **Pinned messages (062)** — a thin pinned-message banner now appears
-  under the chat header for any chat with at least one pinned message,
-  mirroring the official Telegram client. The banner shows a single-line
-  preview of the currently-displayed pin plus an `N OF M` pager when
-  more than one message is pinned. Click anywhere on the banner →
-  scroll to that pin (chat history is back-loaded around the target
-  message when it's older than the cached window) AND advance the
-  carousel to the next pin. Wraps back to the first pin after the
-  last one (carousel). `×` on the right dismisses the banner for
-  this chat; dismissal persists across IDE restarts and auto-resets
-  on the next *new* pin.
-- **Pin / Unpin context-menu entries** — right-click on a message
-  exposes "Pin message" (visible only when the current user has
-  pin permission in the chat) or "Unpin" (visible only on
-  already-pinned messages, when permission allows). Pinning in a
-  group opens a confirmation dialog with a "Notify all members"
-  checkbox (default ON); private chats skip the dialog's notify
-  option. Permission is derived from `Chat.permissions` plus the
-  user's `ChatMember.status` (Creator / Administrator's
-  `canPinMessages` right / chat-level `canPinMessages` flag).
-  All affordances are **hidden** — never shown disabled — when
-  permission is missing.
-- **Cross-client pin / unpin sync** — `UpdateMessageIsPinned`
-  pushes from TDLib update the banner and the chat-history view
-  in real time (≤5 s after another client pins / unpins). The
-  TDLib `MessagePinMessage` service-message variant renders as
-  the existing "X pinned a message" service bubble in the chat
-  history (the renderer plumbing was already in place from spec
-  042; this release wires the mapper arm).
-
-### Fixed
-
-- Pinned-message lookup now uses `SearchChatMessages(filter=Pinned)`
-  exclusively instead of `GetChatPinnedMessage`. The latter returned
-  varied error codes (`PINNED_MESSAGE_NOT_FOUND`,
-  `MESSAGE_NOT_FOUND`, plus chat-specific transient errors) which
-  could leave the plugin showing no banner even though Telegram
-  itself had pinned messages.
+- **Pinned messages** — open any chat that has pinned messages and you'll
+  see a slim bar under the chat title showing the pinned content. Click
+  it to jump straight to that message; if there are several pinned
+  messages, the bar shows "1 of N" and each click cycles through them.
+  Right-click any message → **Pin message** (or **Unpin** on a pinned
+  one) to manage pins yourself when you have the permission, with the
+  usual "Notify all members" toggle for groups. The bar updates live
+  when someone else pins or unpins, and you can hide it for the current
+  chat with the × — it'll come back when a new message is pinned.
+- **Saved Messages** — your chat with yourself now lives at the very
+  top of the chat list with a 🔖 bookmark icon and the title
+  "Saved Messages" (instead of your own name). Click to open your
+  personal scratchpad for snippets, links, and notes — everything
+  syncs to every other Telegram client you're signed in to.
+- **Send to Saved Messages** — right-click in any source file →
+  *Send to Saved Messages* drops the current selection (or the whole
+  file if nothing is selected) straight into your Saved Messages
+  chat. No chat picker, no clicks; long content is split into
+  multiple messages automatically.
+- **Save** — right-click any message in any chat → *Save* forwards
+  it into your Saved Messages with one click, preserving the
+  original sender's name.
 
 ## [1.3.0] - 2026-05-10
 
