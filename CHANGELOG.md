@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-05-12
+
+> Brings **inline code snippets** to your Telegram chats — share a
+> piece of code from your editor and the recipient (if they're also on
+> IDEGram) sees it rendered like in their IDE: filename, syntax
+> highlighting in their theme, collapse/expand, integrity check. For
+> recipients without the plugin, the same message carries a fallback
+> link to a beautifully-rendered web version, so virality and reach
+> are preserved. **Every shared snippet is end-to-end encrypted on
+> your machine** — the key never leaves your browser/IDE; the server
+> only ever sees opaque ciphertext.
+
+### Added
+
+- **Inline code snippets via right-click → Share via IDEGram** —
+  select code in the editor, right-click, pick **Share via IDEGram**,
+  choose a chat. Short selections (up to ~3500 characters) are sent
+  as a rich inline snippet — recipients with IDEGram see a
+  syntax-highlighted code bubble in their own IDE theme, with a
+  filename header, line count, and a `▼ Expand (N lines total)`
+  button when the snippet is taller than 7 lines. Recipients without
+  the plugin see a fallback link to the web version of the snippet.
+- **End-to-end encryption (E2E)** — the code is encrypted on your
+  machine with a fresh AES-256-GCM key per snippet **before** it ever
+  reaches our server. The key is appended to the URL as a fragment
+  (`#…`) and, by HTTP design, never sent to the server. Only the
+  recipient with the link (and the embedded key) can decrypt and
+  read the code.
+- **Integrity check** — every inline snippet carries a small
+  fingerprint of its code body. If the sender later edits the
+  Telegram message, recipients see a small banner above the snippet
+  warning that the contents may have changed. No silent tampering.
+- **Smooth expand animation** — clicking *Expand* animates the
+  snippet to its full height in ~200 ms instead of jumping abruptly.
+- **Automatic fallback to link mode** — when your selection is too
+  large to fit inline (≥ 3500 characters), the same right-click action
+  silently sends a link to the web version of the snippet instead of
+  splitting your message across multiple Telegram messages. One
+  message in, one message out, always.
+- **Privacy posture preserved across the chain** — the plugin does
+  not extract or send your Telegram username, display name, phone
+  number, or any other personal identifier when sharing snippets.
+  Recipients see who you are via Telegram's own sender info above the
+  bubble, as with any normal message.
+- **Virality through forwards** — when a non-IDEGram user forwards
+  your message to another chat, the fallback link is preserved in the
+  forwarded text. Anyone in the new chat can click through to the
+  web snippet — a small invitation to install IDEGram, without any
+  invasive prompt.
+
+### How it looks
+
+For an IDEGram-plugin recipient, a 20-line snippet renders inline as:
+
+> 📎 *AuthService.kt* · Kotlin · 20 lines
+> *(first 7 lines, syntax-highlighted in your IDE theme)*
+> ▼ Expand (20 lines total)
+
+For a non-plugin recipient (Telegram Mobile / Web / Desktop without
+IDEGram), the same message shows:
+
+> 📎 IDEGram snippet · AuthService.kt · 20 lines · *idegram.app/s/…*
+> *(plain text code body)*
+
+Tapping the link opens the web version of the snippet, which decrypts
+client-side in the browser using the key in the URL fragment.
+
 ## [1.5.0] - 2026-05-11
 
 > Adds **one-click stacktrace sharing** from the Run / Debug /
